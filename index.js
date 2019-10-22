@@ -2,17 +2,32 @@ const express = require('express');
 
 const server = express();
 
-server.use(express.json());
+server.use(express.json());;
 
-/**
- * A variável `projects` pode ser `const` porque um `array`
- * pode receber adições ou exclusões mesmo sendo uma constante.
- */
+server.listen(3000);
+
+
 const projects = [];
 
-/**
- * Middleware que checa se o projeto existe
- */
+/*const projects = [
+  {
+    id: "1",
+    title: "S13",
+    tasks: ["Autenticação", "Criar Rotas" ]
+  },
+  {
+    id: "2",
+    title: "Vistoria técnicas",
+    tasks: ["Listar Edifições", "Criar Rotas" ]
+  }
+];*/
+
+// Query params = ?teste=1
+// route params = /projects/1
+// Request body = { "id": 1, "name": "PSBS", "tasks": ["Nova Tarefa"]}
+
+
+//Middleware que checa se o projeto existe
 function checkProjectExists(req, res, next) {
   const { id } = req.params;
   const project = projects.find(p => p.id == id);
@@ -24,9 +39,8 @@ function checkProjectExists(req, res, next) {
   return next();
 }
 
-/**
- * Middleware que dá log no número de requisições
- */
+
+//Middleware que conta o número de requisições até agora
 function logRequests(req, res, next) {
 
   console.count("Número de requisições");
@@ -36,17 +50,21 @@ function logRequests(req, res, next) {
 
 server.use(logRequests);
 
-/**
- * Retorna todos os projetos
- */
-server.get('/projects', (req, res) => {
-  return res.json(projects);
+
+//Listar todos os projetos
+server.get('/projects', (req,res) => {
+  return res.json(projects);  
+})
+
+//Listar um projeto pelo id
+//Ele está pegando o índice do array o ideal é que fosse pelo id mesmo
+//Pesquisar como fazer isso
+server.get('/projects/:id', (req,res) => {
+  const { id } = req.params;
+  return res.json(projects[id]);  
 });
 
-/**
- * Request body: id, title
- * Cadastra um novo projeto
- */
+//Criar um novo projeto inserindo o id e título do projeto
 server.post('/projects', (req, res) => {
   const { id, title } = req.body;
 
@@ -54,11 +72,10 @@ server.post('/projects', (req, res) => {
     id,
     title,
     tasks: []
-  };
+  }
 
-  projects.push(project);
-
-  return res.json(project);
+  projects.push(project);  
+  return res.json(projects);
 });
 
 /**
@@ -76,6 +93,7 @@ server.put('/projects/:id', checkProjectExists, (req, res) => {
 
   return res.json(project);
 });
+
 
 /**
  * Route params: id
@@ -105,5 +123,3 @@ server.post('/projects/:id/tasks', checkProjectExists, (req, res) => {
 
   return res.json(project);
 });
-
-server.listen(4000);
